@@ -1,38 +1,35 @@
+import jwt from 'jsonwebtoken'
 
-import jwt from 'jsonwebtoken';
-
-// Middleware to authenticate JWT tokens
-const auth = async (req, res, next) => {
-    try {
-        const token= req.headers.token;
-        if (!token) {
-            return res.json({
-                success: false,
-                message: "Not authenticated, token missing"
-            });
-        }
-        // Verify the token
-        const token_decoded=jwt.decode(token)
-        if (!token_decoded || !token_decoded.clerkId) {
-            return res.json({
-                success: false,
-                message: "Not authenticated, invalid token"
-            });
-        }
-        req.body.clerkId = token_decoded.clerkId;
-        next();
-        
-    } catch (error) {
-       
-        res.json({
-            success: false,
-            message: "Authentication failed",
-            error: error.message
-        });
+//Middleware Function to decode jwt token to get clerkId
+const authUser = async (req, res, next) => {
+  try {
+    const { token } = req.headers
+    
+    if (!token) {
+      return res.json({ success: false, message: 'Not Authorized Login Again' })
     }
-    next();
+
+    const token_decode = jwt.decode(token)
+    
+    // Check if token decode was successful
+    if (!token_decode) {
+      return res.json({ success: false, message: 'Invalid token' })
+    }
+
+    // Ensure req.body exists before setting properties
+    if (!req.body) {
+      req.body = {}
+    }
+
+    req.body.clerkId = token_decode.clerkId
+    next()
+
+  } catch (error) {
+    console.log(error.message)
+    res.json({ success: false, message: error.message })
+  }
 }
 
-export default auth;
+export default authUser
 
-    
+
